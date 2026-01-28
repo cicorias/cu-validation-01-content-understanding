@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name" : "cu-pkg",
+			"path": "../azure-ai-content-understanding-python"
+		}
+	],
+	"settings": {}
+}
