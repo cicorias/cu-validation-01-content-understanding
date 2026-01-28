@@ -14,7 +14,7 @@ The Azure Content Understanding Python client can now be installed directly usin
 pip install "git+https://github.com/Azure-Samples/azure-ai-content-understanding-python.git@make-pip-install-friendly"
 ```
 
-Alternatively, you can use the provided `vmake.sh` script which creates a virtual environment and installs the client:
+Alternatively, you can use the provided `vmake.sh` script which creates a virtual environment and installs the client. Note that this script may reference a specific fork or branch for development/testing purposes:
 
 ```bash
 ./vmake.sh
@@ -31,8 +31,9 @@ This repository includes:
 
 ### Prerequisites
 
-- Python 3.x
+- Python 3.8 or later
 - Azure AI Services endpoint and API key (or Azure AD authentication)
+- Sample document files (e.g., PDF invoices) for testing placed in a `data/` directory
 - Set up your environment variables in a `.env` file:
   ```
   AZURE_AI_ENDPOINT=<your-endpoint>
@@ -40,6 +41,8 @@ This repository includes:
   ```
 
 ### Running the Quick Parse Example
+
+Before running the script, ensure you have a sample document (e.g., `./data/invoice.pdf`) available for analysis. You can use your own invoice PDF or other supported document formats.
 
 ```bash
 python quick_parse.py
@@ -50,6 +53,8 @@ This script demonstrates:
 - Analyzing documents using prebuilt analyzers (e.g., invoice analyzer)
 - Extracting fields and metadata from documents
 - Saving analysis results to JSON files
+
+**Note**: The script expects a file at `./data/invoice.pdf`. You can either create a `data/` directory with your sample files or modify the `sample_file_path` variable in the script to point to your document.
 
 ### Using the Notebooks
 
