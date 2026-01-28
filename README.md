@@ -120,17 +120,8 @@ The notebook provides:
 
 ### Authentication Methods
 
-**Option 1: Subscription Key** (Quick Start)
-```python
-AZURE_AI_API_KEY = os.getenv("AZURE_AI_API_KEY")
-client = AzureContentUnderstandingClient(
-    endpoint=AZURE_AI_ENDPOINT,
-    subscription_key=AZURE_AI_API_KEY,
-    api_version=API_VERSION
-)
-```
+#### Option 1: Azure AD Token Authentication (Recommended for Production)
 
-**Option 2: Azure AD Token** (Recommended for Production)
 ```python
 from azure.identity import DefaultAzureCredential
 
@@ -141,66 +132,118 @@ def token_provider():
 
 client = AzureContentUnderstandingClient(
     endpoint=AZURE_AI_ENDPOINT,
-    token_provider=token_provider,
-    api_version=API_VERSION
+    api_version="2025-11-01",
+    token_provider=token_provider
+)
+```
+
+#### Option 2: Subscription Key Authentication
+
+```python
+client = AzureContentUnderstandingClient(
+    endpoint=AZURE_AI_ENDPOINT,
+    api_version="2025-11-01",
+    subscription_key=AZURE_AI_API_KEY
 )
 ```
 
 ### Supported Analyzers
 
-The project uses prebuilt analyzers including:
-- `prebuilt-invoice`: Extract invoice fields (vendor, total, line items, etc.)
-- `prebuilt-receipt`: Extract receipt information
-- `prebuilt-layout`: Extract layout and structure
+The project currently uses the `prebuilt-invoice` analyzer, but Azure Content Understanding supports many prebuilt analyzers including:
+
+- `prebuilt-invoice` - Invoice processing
+- `prebuilt-receipt` - Receipt analysis
+- `prebuilt-id-document` - Identity document extraction
+- `prebuilt-business-card` - Business card parsing
 - And many more...
 
-## 📊 Output Example
+## 📝 Example: Analyzing an Invoice
 
-When analyzing an invoice, you'll get structured output like:
+```python
+# Note: content_understanding_client is installed via the pip install command
+# from the GitHub repository as described in the Installation section
+from content_understanding_client import AzureContentUnderstandingClient
+from azure.identity import DefaultAzureCredential
 
-```
-✅ Client created successfully
-   Endpoint: https://your-resource.cognitiveservices.azure.com/
-   Credential: Subscription Key
-   API Version: 2025-11-01
+# Token provider for Azure AD authentication (optional)
+def token_provider():
+    credential = DefaultAzureCredential()
+    token = credential.get_token("https://cognitiveservices.azure.com/.default")
+    return token.token
 
-🔍 Analyzing ./data/invoice.pdf with prebuilt-invoice...
-⏳ Waiting for document analysis to complete...
-✅ Document analysis completed successfully!
+# Initialize client (automatically selects authentication method)
+# Uses token provider if AZURE_AI_API_KEY is not set, otherwise uses subscription key
+client = AzureContentUnderstandingClient(
+    endpoint=AZURE_AI_ENDPOINT,
+    api_version="2025-11-01",
+    subscription_key=AZURE_AI_API_KEY,  # Optional: omit to use token provider
+    token_provider=token_provider if not AZURE_AI_API_KEY else None
+)
 
-📊 Extracted Fields:
---------------------------------------------------------------------------------
-VendorName: Contoso Ltd.
-  Confidence: 0.987
-  Bounding Box: {...}
+# Analyze invoice
+analysis_response = client.begin_analyze_binary(
+    analyzer_id="prebuilt-invoice",
+    file_location="./data/invoice.pdf"
+)
 
-InvoiceTotal: 1234.56
-  Confidence: 0.995
-  Bounding Box: {...}
+# Wait for results
+analysis_result = client.poll_result(analysis_response)
 
-Items (array with 3 items):
-  Item 1:
-    Description: Product A
-    Amount: 500.00
-    ...
+# Access extracted fields
+if analysis_result and "result" in analysis_result:
+    result = analysis_result["result"]
+    contents = result.get("contents", [])
+    fields = contents[0].get("fields", {})
+    
+    # Get invoice details
+    vendor_name = fields.get("VendorName", {}).get("valueString")
+    invoice_total = fields.get("InvoiceTotal", {}).get("valueNumber")
+    invoice_date = fields.get("InvoiceDate", {}).get("valueDate")
 ```
 
 ## 🤝 Contributing
 
-Contributions are welcome! This is a validation and learning project, so feel free to:
+Contributions are welcome! Here are some ways you can contribute:
 
-- Add new examples
-- Improve documentation
-- Share insights about Content Understanding features
-- Report issues or suggest improvements
+1. **Report Bugs**: Open an issue describing the bug and how to reproduce it
+2. **Suggest Features**: Share ideas for new features or improvements
+3. **Submit Pull Requests**: Fix bugs or add features with a PR
+4. **Improve Documentation**: Help make the docs better
 
-## 📝 License
+### Development Setup
 
-This project is provided as-is for learning and validation purposes. Please refer to Azure's terms of service for the Content Understanding API.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Make your changes
+4. Test your changes thoroughly
+5. Commit your changes: `git commit -am 'Add some feature'`
+6. Push to the branch: `git push origin feature/your-feature-name`
+7. Submit a pull request
 
-## 🔗 Resources
+## 📚 Additional Resources
 
-- [Azure Content Understanding Python Client Repository](https://github.com/Azure-Samples/azure-ai-content-understanding-python)
-- [PR #133 - Make client pip-installable](https://github.com/Azure-Samples/azure-ai-content-understanding-python/pull/133)
-- [Azure AI Content Understanding Documentation](https://learn.microsoft.com/azure/ai-services/content-understanding/)
+- [Azure AI Content Understanding Documentation](https://learn.microsoft.com/azure/ai-services/document-intelligence/)
 - [Azure AI Services](https://azure.microsoft.com/services/cognitive-services/)
+- [Azure SDK for Python](https://github.com/Azure/azure-sdk-for-python)
+
+## ⚠️ Important Notes
+
+- **Data Directory**: The `data/` directory is git-ignored. You need to provide your own sample documents for testing.
+- **Test Output**: Analysis results are saved to `test_output/` which is also git-ignored.
+- **API Costs**: Be aware that using Azure AI Content Understanding API incurs costs based on your usage.
+- **Security**: Never commit your `.env` file or API keys to version control.
+
+## 📄 License
+
+This project is for validation and demonstration purposes. Please check the repository for license information.
+
+## 🙋 Support
+
+For issues and questions:
+- Check existing [GitHub Issues](https://github.com/cicorias/cu-validation-01-content-understanding/issues)
+- Open a new issue if you encounter a problem
+- Review Azure AI documentation for API-specific questions
+
+---
+
+**Note**: This is a validation project for Azure AI Content Understanding services. The implementation is subject to change as the service evolves.
