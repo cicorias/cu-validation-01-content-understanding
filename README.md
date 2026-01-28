@@ -167,13 +167,24 @@ The project currently uses the `prebuilt-invoice` analyzer, but Azure Content Un
 ## 📝 Example: Analyzing an Invoice
 
 ```python
+# Note: content_understanding_client is installed via the pip install command
+# from the GitHub repository as described in the Installation section
 from content_understanding_client import AzureContentUnderstandingClient
+from azure.identity import DefaultAzureCredential
 
-# Initialize client
+# Token provider for Azure AD authentication (optional)
+def token_provider():
+    credential = DefaultAzureCredential()
+    token = credential.get_token("https://cognitiveservices.azure.com/.default")
+    return token.token
+
+# Initialize client (automatically selects authentication method)
+# Uses token provider if AZURE_AI_API_KEY is not set, otherwise uses subscription key
 client = AzureContentUnderstandingClient(
     endpoint=AZURE_AI_ENDPOINT,
     api_version="2025-11-01",
-    subscription_key=AZURE_AI_API_KEY
+    subscription_key=AZURE_AI_API_KEY,  # Optional: omit to use token provider
+    token_provider=token_provider if not AZURE_AI_API_KEY else None
 )
 
 # Analyze invoice
