@@ -1,75 +1,206 @@
-# Azure Content Understanding - Validation Repository
+# Azure Content Understanding Validation
 
-This repository validates and demonstrates the usage of the Azure Content Understanding Python client that has been made pip-installable.
+A Python-based validation and sample project for Azure AI Content Understanding API. This project demonstrates how to analyze documents using Azure's Content Understanding service with prebuilt analyzers like invoice processing.
 
-## Purpose
+## 🎯 Overview
 
 This repository was created to validate the Azure Content Understanding Python client from [@Azure-Samples/azure-ai-content-understanding-python](https://github.com/Azure-Samples/azure-ai-content-understanding-python), specifically to test the improvements made in [PR #133](https://github.com/Azure-Samples/azure-ai-content-understanding-python/pull/133) that make the client easier to use and install with `pip`.
 
-## Installation
+This project provides practical examples and utilities for working with Azure AI Content Understanding API, enabling you to:
 
-The Azure Content Understanding Python client can now be installed directly using pip from the GitHub repository:
+- Extract structured data from documents (invoices, forms, receipts, etc.)
+- Validate document processing workflows
+- Understand field extraction capabilities
+- Integrate Azure Content Understanding into your applications
+
+## ✨ Features
+
+- **Prebuilt Analyzer Support**: Leverage Azure's prebuilt analyzers (invoice, receipt, etc.)
+- **Document Processing**: Analyze various document formats (PDF, images, etc.)
+- **Field Extraction**: Extract structured fields with confidence scores and bounding boxes
+- **Interactive Notebooks**: Jupyter notebooks for learning and experimentation
+- **Authentication Flexibility**: Support for both API key and Azure AD token-based authentication
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have:
+
+- Python 3.8 or higher
+- An Azure subscription
+- An Azure AI Services resource configured with Content Understanding
+- Azure credentials (Subscription Key or Azure AD authentication)
+
+## 🚀 Installation
+
+### 1. Clone the Repository
 
 ```bash
-pip install "git+https://github.com/Azure-Samples/azure-ai-content-understanding-python.git@make-pip-install-friendly"
+git clone https://github.com/cicorias/cu-validation-01-content-understanding.git
+cd cu-validation-01-content-understanding
 ```
 
-Alternatively, you can use the provided `vmake.sh` script which creates a virtual environment and installs the client. Note that this script may reference a specific fork or branch for development/testing purposes:
+### 2. Set Up Virtual Environment
+
+Use the provided setup script:
 
 ```bash
 ./vmake.sh
 ```
 
-## Features
+Or manually:
 
-This repository includes:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install "git+https://github.com/Azure-Samples/azure-ai-content-understanding-python.git@make-pip-install-friendly"
+```
 
-- **quick_parse.py**: A Python script demonstrating how to use the Azure Content Understanding client to analyze documents (e.g., invoices) using prebuilt analyzers
-- **notebooks/**: Jupyter notebooks with field extraction examples and other demonstrations
+**Note**: The `vmake.sh` script may reference a specific fork or branch for development/testing purposes. The recommended installation method is using the Azure-Samples repository as shown above.
 
-## Usage
+### 3. Configure Environment Variables
 
-### Prerequisites
+Create a `.env` file in the project root:
 
-- Python 3.8 or later
-- Azure AI Services endpoint and API key (or Azure AD authentication)
-- Sample document files (e.g., PDF invoices) for testing placed in a `data/` directory
-- Set up your environment variables in a `.env` file:
-  ```
-  AZURE_AI_ENDPOINT=<your-endpoint>
-  AZURE_AI_API_KEY=<your-api-key>
-  ```
+```env
+AZURE_AI_ENDPOINT=https://your-resource.cognitiveservices.azure.com/
+AZURE_AI_API_KEY=your-subscription-key-here
+```
 
-### Running the Quick Parse Example
+**Note**: Using Azure AD authentication (DefaultAzureCredential) is recommended for production. If using token-based auth, you can omit `AZURE_AI_API_KEY`.
 
-Before running the script, ensure you have a sample document (e.g., `./data/invoice.pdf`) available for analysis. You can use your own invoice PDF or other supported document formats.
+## 💻 Usage
+
+### Quick Start with Python Script
+
+The `quick_parse.py` script demonstrates invoice analysis:
 
 ```bash
 python quick_parse.py
 ```
 
-This script demonstrates:
-- Creating an Azure Content Understanding client
-- Analyzing documents using prebuilt analyzers (e.g., invoice analyzer)
-- Extracting fields and metadata from documents
-- Saving analysis results to JSON files
+This script will:
+1. Connect to Azure Content Understanding service
+2. Analyze a sample invoice from `./data/invoice.pdf`
+3. Extract structured fields (vendor, total, line items, etc.)
+4. Display confidence scores and bounding boxes
+5. Save the full JSON result to the output directory
 
-**Note**: The script expects a file at `./data/invoice.pdf`. You can either create a `data/` directory with your sample files or modify the `sample_file_path` variable in the script to point to your document.
+**Note**: Ensure you have a sample document at `./data/invoice.pdf` before running. You can use your own invoice PDF or modify the `sample_file_path` variable in the script to point to your document.
 
-### Using the Notebooks
+### Using Jupyter Notebooks
 
-Navigate to the `notebooks/` directory and open the Jupyter notebooks to explore interactive examples:
+For interactive exploration:
 
 ```bash
-cd notebooks
-jupyter notebook field_extraction.ipynb
+jupyter notebook notebooks/field_extraction.ipynb
 ```
 
-## Related Resources
+The notebook provides:
+- Step-by-step guidance on using Content Understanding API
+- Examples of field extraction
+- Visualization of extracted data
+- Custom analyzer demonstrations
+
+## 📁 Project Structure
+
+```
+.
+├── quick_parse.py              # Quick start script for invoice analysis
+├── vmake.sh                    # Virtual environment setup script
+├── notebooks/
+│   └── field_extraction.ipynb  # Interactive Jupyter notebook
+├── data/                       # Sample documents (not in repo)
+│   └── invoice.pdf
+├── .env                        # Environment configuration (create this)
+├── .gitignore                  # Git ignore rules
+└── README.md                   # This file
+```
+
+## 🔧 Configuration
+
+### Authentication Methods
+
+**Option 1: Subscription Key** (Quick Start)
+```python
+AZURE_AI_API_KEY = os.getenv("AZURE_AI_API_KEY")
+client = AzureContentUnderstandingClient(
+    endpoint=AZURE_AI_ENDPOINT,
+    subscription_key=AZURE_AI_API_KEY,
+    api_version=API_VERSION
+)
+```
+
+**Option 2: Azure AD Token** (Recommended for Production)
+```python
+from azure.identity import DefaultAzureCredential
+
+def token_provider():
+    credential = DefaultAzureCredential()
+    token = credential.get_token("https://cognitiveservices.azure.com/.default")
+    return token.token
+
+client = AzureContentUnderstandingClient(
+    endpoint=AZURE_AI_ENDPOINT,
+    token_provider=token_provider,
+    api_version=API_VERSION
+)
+```
+
+### Supported Analyzers
+
+The project uses prebuilt analyzers including:
+- `prebuilt-invoice`: Extract invoice fields (vendor, total, line items, etc.)
+- `prebuilt-receipt`: Extract receipt information
+- `prebuilt-layout`: Extract layout and structure
+- And many more...
+
+## 📊 Output Example
+
+When analyzing an invoice, you'll get structured output like:
+
+```
+✅ Client created successfully
+   Endpoint: https://your-resource.cognitiveservices.azure.com/
+   Credential: Subscription Key
+   API Version: 2025-11-01
+
+🔍 Analyzing ./data/invoice.pdf with prebuilt-invoice...
+⏳ Waiting for document analysis to complete...
+✅ Document analysis completed successfully!
+
+📊 Extracted Fields:
+--------------------------------------------------------------------------------
+VendorName: Contoso Ltd.
+  Confidence: 0.987
+  Bounding Box: {...}
+
+InvoiceTotal: 1234.56
+  Confidence: 0.995
+  Bounding Box: {...}
+
+Items (array with 3 items):
+  Item 1:
+    Description: Product A
+    Amount: 500.00
+    ...
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! This is a validation and learning project, so feel free to:
+
+- Add new examples
+- Improve documentation
+- Share insights about Content Understanding features
+- Report issues or suggest improvements
+
+## 📝 License
+
+This project is provided as-is for learning and validation purposes. Please refer to Azure's terms of service for the Content Understanding API.
+
+## 🔗 Resources
 
 - [Azure Content Understanding Python Client Repository](https://github.com/Azure-Samples/azure-ai-content-understanding-python)
 - [PR #133 - Make client pip-installable](https://github.com/Azure-Samples/azure-ai-content-understanding-python/pull/133)
-
-## License
-
-This project follows the licensing of the original Azure Content Understanding Python samples repository.
+- [Azure AI Content Understanding Documentation](https://learn.microsoft.com/azure/ai-services/content-understanding/)
+- [Azure AI Services](https://azure.microsoft.com/services/cognitive-services/)
