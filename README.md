@@ -1,28 +1,34 @@
-# Azure Content Understanding Validation Project
+# Azure Content Understanding Validation
 
-A Python-based validation and demonstration project for Azure AI Content Understanding services, focusing on document analysis and field extraction capabilities.
+A Python-based validation and sample project for Azure AI Content Understanding API. This project demonstrates how to analyze documents using Azure's Content Understanding service with prebuilt analyzers like invoice processing.
 
 ## 🎯 Overview
 
-This project provides tools and examples for working with Azure's Content Understanding API to analyze documents, extract structured information, and validate the service capabilities. It includes both command-line scripts and interactive Jupyter notebooks for different use cases.
+This repository was created to validate the Azure Content Understanding Python client from [@Azure-Samples/azure-ai-content-understanding-python](https://github.com/Azure-Samples/azure-ai-content-understanding-python), specifically to test the improvements made in [PR #133](https://github.com/Azure-Samples/azure-ai-content-understanding-python/pull/133) that make the client easier to use and install with `pip`.
+
+This project provides practical examples and utilities for working with Azure AI Content Understanding API, enabling you to:
+
+- Extract structured data from documents (invoices, forms, receipts, etc.)
+- Validate document processing workflows
+- Understand field extraction capabilities
+- Integrate Azure Content Understanding into your applications
 
 ## ✨ Features
 
-- **Document Analysis**: Analyze PDF and other document formats using Azure AI Content Understanding
-- **Field Extraction**: Extract structured fields from documents using prebuilt analyzers
-- **Invoice Processing**: Specialized support for invoice analysis with the prebuilt-invoice analyzer
-- **Interactive Notebooks**: Jupyter notebooks for exploratory analysis and testing
-- **Flexible Authentication**: Support for both Azure AD token-based authentication and subscription key authentication
+- **Prebuilt Analyzer Support**: Leverage Azure's prebuilt analyzers (invoice, receipt, etc.)
+- **Document Processing**: Analyze various document formats (PDF, images, etc.)
+- **Field Extraction**: Extract structured fields with confidence scores and bounding boxes
+- **Interactive Notebooks**: Jupyter notebooks for learning and experimentation
+- **Authentication Flexibility**: Support for both API key and Azure AD token-based authentication
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have the following:
+Before you begin, ensure you have:
 
-- Python 3.7 or higher
+- Python 3.8 or higher
 - An Azure subscription
-- An Azure AI Services resource configured with Content Understanding API access
-- Azure AI endpoint URL
-- Either an Azure AD credential or an API subscription key
+- An Azure AI Services resource configured with Content Understanding
+- Azure credentials (Subscription Key or Azure AD authentication)
 
 ## 🚀 Installation
 
@@ -35,40 +41,36 @@ cd cu-validation-01-content-understanding
 
 ### 2. Set Up Virtual Environment
 
-Use the provided script to create a virtual environment and install dependencies:
+Use the provided setup script:
 
 ```bash
 ./vmake.sh
 ```
 
-This script will:
-- Remove any existing `.venv` directory
-- Create a new Python virtual environment
-- Activate the virtual environment
-- Install the Azure AI Content Understanding Python client from the GitHub repository
-
-Alternatively, you can manually set up the environment:
+Or manually:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install "git+https://github.com/cicorias/azure-ai-content-understanding-python-1.git@make-pip-install-friendly"
+pip install "git+https://github.com/Azure-Samples/azure-ai-content-understanding-python.git@make-pip-install-friendly"
 ```
+
+**Note**: The `vmake.sh` script may reference a specific fork or branch for development/testing purposes. The recommended installation method is using the Azure-Samples repository as shown above.
 
 ### 3. Configure Environment Variables
 
-Create a `.env` file in the project root with your Azure credentials:
+Create a `.env` file in the project root:
 
 ```env
-AZURE_AI_ENDPOINT=https://your-resource-name.cognitiveservices.azure.com/
+AZURE_AI_ENDPOINT=https://your-resource.cognitiveservices.azure.com/
 AZURE_AI_API_KEY=your-subscription-key-here
 ```
 
-**Note**: You can use either `AZURE_AI_API_KEY` (subscription key) or Azure AD authentication. For production environments, Azure AD token-based authentication is recommended for better security.
+**Note**: Using Azure AD authentication (DefaultAzureCredential) is recommended for production. If using token-based auth, you can omit `AZURE_AI_API_KEY`.
 
-## 📖 Usage
+## 💻 Usage
 
-### Quick Start with Command Line
+### Quick Start with Python Script
 
 The `quick_parse.py` script demonstrates invoice analysis:
 
@@ -77,50 +79,41 @@ python quick_parse.py
 ```
 
 This script will:
-1. Load your Azure credentials from the `.env` file
-2. Create an Azure Content Understanding client
-3. Analyze a sample invoice PDF from the `./data/invoice.pdf` path
-4. Extract and display structured fields (vendor, amounts, dates, line items, etc.)
-5. Save the complete analysis result to a JSON file
+1. Connect to Azure Content Understanding service
+2. Analyze a sample invoice from `./data/invoice.pdf`
+3. Extract structured fields (vendor, total, line items, etc.)
+4. Display confidence scores and bounding boxes
+5. Save the full JSON result to the output directory
 
-**Expected Output:**
-- ✅ Client creation confirmation
-- 🔍 Analysis progress updates
-- 📊 Extracted fields with confidence scores
-- 📋 Content metadata
-- 💾 Path to saved JSON results
+**Note**: Ensure you have a sample document at `./data/invoice.pdf` before running. You can use your own invoice PDF or modify the `sample_file_path` variable in the script to point to your document.
 
 ### Using Jupyter Notebooks
 
-For interactive exploration, use the provided notebook:
+For interactive exploration:
 
 ```bash
-# Make sure your virtual environment is activated
-source .venv/bin/activate
-
-# Start Jupyter
 jupyter notebook notebooks/field_extraction.ipynb
 ```
 
-The `field_extraction.ipynb` notebook provides:
-- Step-by-step guidance for document analysis
-- Examples of using prebuilt analyzers
-- Custom field extraction demonstrations
-- Interactive result visualization
+The notebook provides:
+- Step-by-step guidance on using Content Understanding API
+- Examples of field extraction
+- Visualization of extracted data
+- Custom analyzer demonstrations
 
 ## 📁 Project Structure
 
 ```
-cu-validation-01-content-understanding/
-├── .gitignore                          # Git ignore rules
-├── cu-validation-01.code-workspace     # VS Code workspace configuration
-├── vmake.sh                            # Virtual environment setup script
-├── quick_parse.py                      # Command-line invoice analysis script
-├── notebooks/                          # Jupyter notebooks for interactive analysis
-│   └── field_extraction.ipynb          # Field extraction examples and tutorials
-├── data/                               # Sample documents for testing (not in repo)
-│   └── invoice.pdf                     # Sample invoice file
-└── test_output/                        # Generated analysis results (not in repo)
+.
+├── quick_parse.py              # Quick start script for invoice analysis
+├── vmake.sh                    # Virtual environment setup script
+├── notebooks/
+│   └── field_extraction.ipynb  # Interactive Jupyter notebook
+├── data/                       # Sample documents (not in repo)
+│   └── invoice.pdf
+├── .env                        # Environment configuration (create this)
+├── .gitignore                  # Git ignore rules
+└── README.md                   # This file
 ```
 
 ## 🔧 Configuration
